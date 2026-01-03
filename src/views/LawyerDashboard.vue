@@ -160,10 +160,12 @@
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
 
 const authStore = useAuthStore();
 const router = useRouter();
+
+// Replace with your actual API base URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5173/api';
 
 const user = ref(null);
 const activeFilter = ref('all');
@@ -203,13 +205,20 @@ const getStatusClass = (status) => {
 
 const fetchAppointments = async () => {
   try {
-    const response = await axios.get('/api/appointments/lawyer', {
+    const response = await fetch(`${API_BASE_URL}/appointments/lawyer`, {
+      method: 'GET',
       headers: {
-        Authorization: `Bearer ${authStore.token}`
+        'Authorization': `Bearer ${authStore.token}`,
+        'Content-Type': 'application/json'
       }
     });
     
-    appointments.value = response.data.appointments || [];
+    if (!response.ok) {
+      throw new Error('Failed to fetch appointments');
+    }
+    
+    const data = await response.json();
+    appointments.value = data.appointments || [];
     updateStats();
   } catch (error) {
     console.error('Error fetching appointments:', error);
@@ -225,11 +234,18 @@ const updateStats = () => {
 
 const acceptAppointment = async (id) => {
   try {
-    await axios.put(`/api/appointments/${id}/accept`, {}, {
+    const response = await fetch(`${API_BASE_URL}/appointments/${id}/accept`, {
+      method: 'PUT',
       headers: {
-        Authorization: `Bearer ${authStore.token}`
+        'Authorization': `Bearer ${authStore.token}`,
+        'Content-Type': 'application/json'
       }
     });
+    
+    if (!response.ok) {
+      throw new Error('Failed to accept appointment');
+    }
+    
     await fetchAppointments();
   } catch (error) {
     console.error('Error accepting appointment:', error);
@@ -238,11 +254,18 @@ const acceptAppointment = async (id) => {
 
 const rejectAppointment = async (id) => {
   try {
-    await axios.put(`/api/appointments/${id}/reject`, {}, {
+    const response = await fetch(`${API_BASE_URL}/appointments/${id}/reject`, {
+      method: 'PUT',
       headers: {
-        Authorization: `Bearer ${authStore.token}`
+        'Authorization': `Bearer ${authStore.token}`,
+        'Content-Type': 'application/json'
       }
     });
+    
+    if (!response.ok) {
+      throw new Error('Failed to reject appointment');
+    }
+    
     await fetchAppointments();
   } catch (error) {
     console.error('Error rejecting appointment:', error);
