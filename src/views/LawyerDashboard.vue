@@ -1,23 +1,33 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100">
     <!-- Header -->
-    <header class="bg-white shadow-md border-b">
-      <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <div class="text-4xl">⚖️</div>
-          <div>
-            <h1 class="text-2xl font-bold text-gray-800">Lawyer Dashboard</h1>
-            <p class="text-gray-600">Welcome, {{ user?.name || 'Attorney Jane Smith' }}</p>
+    <header class="bg-gradient-to-r from-amber-900 to-amber-800 text-white shadow-lg">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="bg-amber-700 w-12 h-12 rounded-xl flex items-center justify-center">
+              <font-awesome-icon icon="scale-balanced" class="text-2xl" />
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold">Lawyer Dashboard</h1>
+              <p class="text-amber-200">Welcome, {{ lawyerStore.lawyerProfile.name }}</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <div class="text-right hidden md:block">
+              <p class="text-xs text-amber-200">Bar License</p>
+              <p class="text-sm font-medium">{{ lawyerStore.lawyerProfile.barNumber }}</p>
+            </div>
+            <button 
+              @click="handleLogout"
+              class="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium"
+            >
+              <font-awesome-icon icon="right-from-bracket" />
+              <span>Logout</span>
+            </button>
           </div>
         </div>
-        
-        <button 
-          @click="handleLogout"
-          class="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
-        >
-          <span class="text-xl">🚪</span>
-          Logout
-        </button>
       </div>
     </header>
 
@@ -25,120 +35,178 @@
     <main class="container mx-auto px-4 py-8">
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <!-- Total -->
-        <div class="bg-white rounded-xl shadow-md p-6">
+        <!-- Total Appointments -->
+        <div class="bg-white rounded-xl shadow-md border border-amber-200 p-6 hover:shadow-lg transition-shadow">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-gray-600 font-medium">Total</h3>
-            <span class="text-4xl text-blue-500">📅</span>
+            <h3 class="text-amber-700 font-medium">Total Appointments</h3>
+            <div class="bg-amber-100 p-3 rounded-lg">
+              <font-awesome-icon icon="calendar-days" class="text-amber-600 text-xl" />
+            </div>
           </div>
-          <p class="text-4xl font-bold text-gray-800">{{ stats.total }}</p>
+          <p class="text-4xl font-bold text-amber-900">{{ lawyerStore.stats.total }}</p>
+          <p class="text-sm text-amber-600 mt-2">All time consultations</p>
         </div>
 
         <!-- Pending -->
-        <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="bg-white rounded-xl shadow-md border border-amber-200 p-6 hover:shadow-lg transition-shadow">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-gray-600 font-medium">Pending</h3>
-            <span class="text-4xl text-amber-500">📋</span>
+            <h3 class="text-amber-700 font-medium">Pending</h3>
+            <div class="bg-amber-100 p-3 rounded-lg">
+              <font-awesome-icon icon="clock" class="text-amber-600 text-xl" />
+            </div>
           </div>
-          <p class="text-4xl font-bold text-amber-600">{{ stats.pending }}</p>
+          <p class="text-4xl font-bold text-amber-900">{{ lawyerStore.stats.pending }}</p>
+          <p class="text-sm text-amber-600 mt-2">Awaiting review</p>
         </div>
 
         <!-- Accepted -->
-        <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="bg-white rounded-xl shadow-md border border-amber-200 p-6 hover:shadow-lg transition-shadow">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-gray-600 font-medium">Accepted</h3>
-            <span class="text-4xl text-green-500">✅</span>
+            <h3 class="text-amber-700 font-medium">Accepted</h3>
+            <div class="bg-green-100 p-3 rounded-lg">
+              <font-awesome-icon icon="circle-check" class="text-green-600 text-xl" />
+            </div>
           </div>
-          <p class="text-4xl font-bold text-green-600">{{ stats.accepted }}</p>
+          <p class="text-4xl font-bold text-green-700">{{ lawyerStore.stats.accepted }}</p>
+          <p class="text-sm text-green-600 mt-2">Confirmed sessions</p>
         </div>
 
         <!-- Rejected -->
-        <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="bg-white rounded-xl shadow-md border border-amber-200 p-6 hover:shadow-lg transition-shadow">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-gray-600 font-medium">Rejected</h3>
-            <span class="text-4xl text-red-500">❌</span>
+            <h3 class="text-amber-700 font-medium">Rejected</h3>
+            <div class="bg-red-100 p-3 rounded-lg">
+              <font-awesome-icon icon="circle-xmark" class="text-red-600 text-xl" />
+            </div>
           </div>
-          <p class="text-4xl font-bold text-red-600">{{ stats.rejected }}</p>
+          <p class="text-4xl font-bold text-red-700">{{ lawyerStore.stats.rejected }}</p>
+          <p class="text-sm text-red-600 mt-2">Declined requests</p>
         </div>
       </div>
 
       <!-- Filter Tabs -->
-      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-        <div class="flex gap-3">
+      <div class="bg-white rounded-xl shadow-md border border-amber-200 p-6 mb-8">
+        <div class="flex flex-wrap gap-3">
           <button
-            v-for="filter in filters"
+            v-for="filter in lawyerStore.filters"
             :key="filter.key"
-            @click="activeFilter = filter.key"
+            @click="lawyerStore.setActiveFilter(filter.key)"
             :class="[
-              'px-6 py-3 rounded-lg font-medium transition',
-              activeFilter === filter.key
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              'px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2',
+              lawyerStore.activeFilter === filter.key
+                ? 'bg-amber-600 text-white'
+                : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
             ]"
           >
-            {{ filter.label }} ({{ stats[filter.key] }})
+            <font-awesome-icon :icon="filter.icon" />
+            {{ filter.label }} ({{ filter.count }})
           </button>
         </div>
       </div>
 
       <!-- Appointments List -->
-      <div class="bg-white rounded-xl shadow-md p-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Client Appointments</h2>
+      <div class="bg-white rounded-xl shadow-md border border-amber-200 p-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-amber-900">Client Appointments</h2>
+            <p class="text-amber-600 mt-1">Manage your consultation schedule</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button 
+              @click="refreshAppointments"
+              :disabled="lawyerStore.isLoading"
+              class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+            >
+              <font-awesome-icon icon="arrow-rotate-right" :class="{ 'animate-spin': lawyerStore.isLoading }" class="text-sm" />
+              <span>{{ lawyerStore.isLoading ? 'Loading...' : 'Refresh' }}</span>
+            </button>
+          </div>
+        </div>
         
         <!-- Empty State -->
-        <div v-if="filteredAppointments.length === 0" class="text-center py-16">
-          <div class="text-6xl mb-4">📭</div>
-          <p class="text-xl text-gray-500">No appointments found.</p>
+        <div v-if="lawyerStore.filteredAppointments.length === 0" class="text-center py-16">
+          <div class="bg-amber-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <font-awesome-icon icon="calendar-xmark" class="text-amber-600 text-4xl" />
+          </div>
+          <p class="text-xl text-amber-600 font-medium mb-2">No appointments found</p>
+          <p class="text-amber-500">You don't have any {{ lawyerStore.activeFilter !== 'all' ? lawyerStore.activeFilter : '' }} appointments scheduled.</p>
         </div>
 
         <!-- Appointments Table -->
         <div v-else class="overflow-x-auto">
           <table class="w-full">
-            <thead>
-              <tr class="border-b-2 border-gray-200">
-                <th class="text-left py-4 px-4 font-semibold text-gray-700">Client Name</th>
-                <th class="text-left py-4 px-4 font-semibold text-gray-700">Date</th>
-                <th class="text-left py-4 px-4 font-semibold text-gray-700">Time</th>
-                <th class="text-left py-4 px-4 font-semibold text-gray-700">Category</th>
-                <th class="text-left py-4 px-4 font-semibold text-gray-700">Status</th>
-                <th class="text-left py-4 px-4 font-semibold text-gray-700">Actions</th>
+            <thead class="bg-amber-50">
+              <tr>
+                <th class="text-left py-4 px-4 font-semibold text-amber-900">Client Name</th>
+                <th class="text-left py-4 px-4 font-semibold text-amber-900">Date & Time</th>
+                <th class="text-left py-4 px-4 font-semibold text-amber-900">Category</th>
+                <th class="text-left py-4 px-4 font-semibold text-amber-900">Status</th>
+                <th class="text-left py-4 px-4 font-semibold text-amber-900">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr 
-                v-for="appointment in filteredAppointments" 
+                v-for="appointment in lawyerStore.filteredAppointments" 
                 :key="appointment.id"
-                class="border-b border-gray-100 hover:bg-gray-50"
+                class="border-b border-amber-100 hover:bg-amber-50 transition-colors"
               >
-                <td class="py-4 px-4 font-medium text-gray-800">{{ appointment.clientName }}</td>
-                <td class="py-4 px-4 text-gray-600">{{ appointment.date }}</td>
-                <td class="py-4 px-4 text-gray-600">{{ appointment.time }}</td>
-                <td class="py-4 px-4 text-gray-600">{{ appointment.category }}</td>
                 <td class="py-4 px-4">
-                  <span :class="getStatusClass(appointment.status)" class="px-3 py-1 rounded-full text-sm font-medium">
-                    {{ appointment.status }}
+                  <div class="flex items-center gap-3">
+                    <div class="bg-amber-100 w-10 h-10 rounded-full flex items-center justify-center">
+                      <font-awesome-icon icon="user" class="text-amber-600" />
+                    </div>
+                    <div>
+                      <p class="font-medium text-amber-900">{{ appointment.clientName }}</p>
+                      <p class="text-xs text-amber-600">{{ appointment.clientEmail || 'client@email.com' }}</p>
+                      <p class="text-xs text-amber-500">{{ appointment.clientPhone }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4 px-4">
+                  <div class="text-amber-900 font-medium">{{ formatDate(appointment.date) }}</div>
+                  <div class="text-sm text-amber-600">{{ appointment.time }}</div>
+                </td>
+                <td class="py-4 px-4">
+                  <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                    {{ appointment.category }}
                   </span>
+                </td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center gap-2">
+                    <span :class="lawyerStore.getStatusClass(appointment.status)" 
+                      class="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                      <font-awesome-icon :icon="lawyerStore.getStatusIcon(appointment.status)" class="text-xs" />
+                      {{ appointment.status }}
+                    </span>
+                  </div>
                 </td>
                 <td class="py-4 px-4">
                   <div class="flex gap-2">
                     <button 
                       v-if="appointment.status === 'Pending'"
-                      @click="acceptAppointment(appointment.id)"
-                      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                      @click="handleAcceptAppointment(appointment.id)"
+                      class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
+                      title="Accept Appointment"
                     >
-                      Accept
+                      <font-awesome-icon icon="check" class="text-xs" />
+                      <span>Accept</span>
                     </button>
                     <button 
                       v-if="appointment.status === 'Pending'"
-                      @click="rejectAppointment(appointment.id)"
-                      class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
+                      @click="handleRejectAppointment(appointment.id)"
+                      class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
+                      title="Reject Appointment"
                     >
-                      Reject
+                      <font-awesome-icon icon="xmark" class="text-xs" />
+                      <span>Reject</span>
                     </button>
                     <button 
-                      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+                      @click="viewAppointmentDetails(appointment)"
+                      class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
+                      title="View Details"
                     >
-                      View
+                      <font-awesome-icon icon="eye" class="text-xs" />
+                      <span>View</span>
                     </button>
                   </div>
                 </td>
@@ -150,135 +218,113 @@
     </main>
 
     <!-- Help Button -->
-    <button class="fixed bottom-8 right-8 w-14 h-14 bg-gray-800 text-white rounded-full shadow-lg hover:bg-gray-900 transition flex items-center justify-center text-2xl">
-      ?
+    <button class="fixed bottom-8 right-8 w-14 h-14 bg-amber-800 hover:bg-amber-700 text-white rounded-full shadow-lg transition-colors flex items-center justify-center z-50">
+      <font-awesome-icon icon="question" class="text-xl" />
     </button>
+
+    <!-- Appointment Details Modal -->
+    <AppointmentDetailsModal 
+      v-if="lawyerStore.selectedAppointment"
+      :appointment="lawyerStore.selectedAppointment"
+      @close="lawyerStore.clearSelectedAppointment()"
+      @accept="handleAcceptAppointment"
+      @reject="handleRejectAppointment"
+      @reschedule="handleRescheduleAppointment"
+      @add-note="handleAddNote"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useLawyerStore } from '@/stores/lawyer'
+import { useAuthStore } from '@/stores/auth'
+import AppointmentDetailsModal from '@/components/clients/AppointmentDetailsModal.vue'
 
-const authStore = useAuthStore();
-const router = useRouter();
-
-// Replace with your actual API base URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5173/api';
-
-const user = ref(null);
-const activeFilter = ref('all');
-const appointments = ref([]);
-
-const stats = ref({
-  total: 0,
-  pending: 0,
-  accepted: 0,
-  rejected: 0
-});
-
-const filters = [
-  { key: 'all', label: 'All' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'accepted', label: 'Accepted' },
-  { key: 'rejected', label: 'Rejected' }
-];
-
-const filteredAppointments = computed(() => {
-  if (activeFilter.value === 'all') {
-    return appointments.value;
-  }
-  return appointments.value.filter(
-    apt => apt.status.toLowerCase() === activeFilter.value
-  );
-});
-
-const getStatusClass = (status) => {
-  const classes = {
-    Pending: 'bg-amber-100 text-amber-800',
-    Accepted: 'bg-green-100 text-green-800',
-    Rejected: 'bg-red-100 text-red-800'
-  };
-  return classes[status] || 'bg-gray-100 text-gray-800';
-};
-
-const fetchAppointments = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/appointments/lawyer`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch appointments');
-    }
-    
-    const data = await response.json();
-    appointments.value = data.appointments || [];
-    updateStats();
-  } catch (error) {
-    console.error('Error fetching appointments:', error);
-  }
-};
-
-const updateStats = () => {
-  stats.value.total = appointments.value.length;
-  stats.value.pending = appointments.value.filter(a => a.status === 'Pending').length;
-  stats.value.accepted = appointments.value.filter(a => a.status === 'Accepted').length;
-  stats.value.rejected = appointments.value.filter(a => a.status === 'Rejected').length;
-};
-
-const acceptAppointment = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/appointments/${id}/accept`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to accept appointment');
-    }
-    
-    await fetchAppointments();
-  } catch (error) {
-    console.error('Error accepting appointment:', error);
-  }
-};
-
-const rejectAppointment = async (id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/appointments/${id}/reject`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to reject appointment');
-    }
-    
-    await fetchAppointments();
-  } catch (error) {
-    console.error('Error rejecting appointment:', error);
-  }
-};
-
-const handleLogout = async () => {
-  await authStore.logout();
-  router.push('/login');
-};
+const router = useRouter()
+const lawyerStore = useLawyerStore()
+const authStore = useAuthStore()
 
 onMounted(() => {
-  user.value = authStore.user;
-  fetchAppointments();
-});
+  // Load appointments
+  lawyerStore.fetchAppointments()
+  // Load lawyer profile from storage
+  lawyerStore.loadProfileFromStorage()
+})
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { 
+    weekday: 'short', 
+    month: 'short', 
+    day: 'numeric',
+    year: 'numeric'
+  })
+}
+
+const refreshAppointments = () => {
+  lawyerStore.fetchAppointments()
+}
+
+const viewAppointmentDetails = (appointment) => {
+  lawyerStore.selectAppointment(appointment)
+}
+
+const handleAcceptAppointment = async (appointmentId) => {
+  const result = await lawyerStore.acceptAppointment(appointmentId)
+  if (result.success) {
+    alert(result.message)
+  } else {
+    alert(result.message)
+  }
+}
+
+const handleRejectAppointment = async (appointmentId) => {
+  const result = await lawyerStore.rejectAppointment(appointmentId)
+  if (result.success) {
+    alert(result.message)
+  } else {
+    alert(result.message)
+  }
+}
+
+const handleRescheduleAppointment = async (appointmentId, newDate, newTime) => {
+  const result = await lawyerStore.rescheduleAppointment(appointmentId, newDate, newTime)
+  if (result.success) {
+    alert(result.message)
+  } else {
+    alert(result.message)
+  }
+}
+
+const handleAddNote = (appointmentId, note) => {
+  lawyerStore.addNoteToAppointment(appointmentId, note)
+}
+
+const handleLogout = async () => {
+  await authStore.logout()
+  router.push('/login')
+}
 </script>
+
+<style scoped>
+/* Custom scrollbar for table */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #fef3c7;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #d97706;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #b45309;
+}
+</style>

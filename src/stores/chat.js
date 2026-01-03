@@ -30,6 +30,26 @@ export const useChatStore = defineStore('chat', () => {
 
   const currentChat = ref(null)
   const isTyping = ref(false)
+  const activeTab = ref('chat') // 'chat', 'history', 'appointments'
+  const selectedTopic = ref('')
+
+  // Legal Topics for Client Dashboard
+  const legalTopics = ref([
+    { name: 'Public Health & Safety', description: 'Butuan City health and safety ordinances', icon: 'shield-heart' },
+    { name: 'Land Use & Zoning', description: 'Property, construction, and land development', icon: 'landmark' },
+    { name: 'Environment & Natural Resources', description: 'Environmental protection and conservation', icon: 'leaf' },
+    { name: 'Business & Commerce', description: 'Business permits, licenses, and regulations', icon: 'briefcase' },
+    { name: 'Traffic & Transportation', description: 'Road rules, parking, and transport regulations', icon: 'car' },
+    { name: 'Community & Social Services', description: 'Social welfare, education, and community programs', icon: 'users' }
+  ])
+
+  const quickSuggestions = ref([
+    "How do I apply for a business permit?",
+    "What are the traffic violations in Butuan?",
+    "How to register a property?",
+    "What are the requirements for building permit?",
+    "How to report environmental concerns?"
+  ])
 
   // Getters
   const chatHistory = computed(() => {
@@ -48,6 +68,10 @@ export const useChatStore = defineStore('chat', () => {
     return chats.value.reduce((total, chat) => total + chat.unreadCount, 0)
   })
 
+  const isChatOpen = computed(() => {
+    return !!selectedTopic.value
+  })
+
   // Actions
   const startNewChat = (topic, initialMessage = '') => {
     const newChat = {
@@ -63,6 +87,7 @@ export const useChatStore = defineStore('chat', () => {
     
     chats.value.unshift(newChat)
     currentChat.value = newChat
+    selectedTopic.value = topic
     return newChat
   }
 
@@ -73,7 +98,8 @@ export const useChatStore = defineStore('chat', () => {
         id: chat.messages.length + 1,
         sender: message.sender,
         text: message.text,
-        timestamp: new Date()
+        timestamp: new Date(),
+        ordinanceReferences: message.ordinanceReferences || []
       }
       
       chat.messages.push(newMessage)
@@ -113,10 +139,41 @@ export const useChatStore = defineStore('chat', () => {
   const clearAllChats = () => {
     chats.value = []
     currentChat.value = null
+    selectedTopic.value = ''
+  }
+
+  const setActiveTab = (tab) => {
+    activeTab.value = tab
+  }
+
+  const setSelectedTopic = (topic) => {
+    selectedTopic.value = topic
+  }
+
+  const closeChat = () => {
+    selectedTopic.value = ''
+    currentChat.value = null
   }
 
   const markAsTyping = (typing) => {
     isTyping.value = typing
+  }
+
+  const generateBotResponse = (userMessage) => {
+    // Simulate bot responses
+    const responses = [
+      'I understand your question. Let me check the regulations for you.',
+      'Based on Butuan City Ordinance No. 2023-05, the answer is...',
+      'Could you provide more details about your situation?',
+      'I recommend consulting with a lawyer for specific legal advice on this matter.',
+      'For that concern, you need to visit the City Legal Office with the following documents...'
+    ]
+    
+    return {
+      text: responses[Math.floor(Math.random() * responses.length)],
+      references: [],
+      type: 'general'
+    }
   }
 
   return {
@@ -124,10 +181,15 @@ export const useChatStore = defineStore('chat', () => {
     chats,
     currentChat,
     isTyping,
+    activeTab,
+    selectedTopic,
+    legalTopics,
+    quickSuggestions,
     
     // Getters
     chatHistory,
     unreadChatsCount,
+    isChatOpen,
     
     // Actions
     startNewChat,
@@ -135,6 +197,10 @@ export const useChatStore = defineStore('chat', () => {
     setCurrentChat,
     deleteChat,
     clearAllChats,
-    markAsTyping
+    setActiveTab,
+    setSelectedTopic,
+    closeChat,
+    markAsTyping,
+    generateBotResponse
   }
 })
