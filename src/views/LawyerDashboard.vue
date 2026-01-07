@@ -10,14 +10,14 @@
             </div>
             <div>
               <h1 class="text-2xl font-bold">Lawyer Dashboard</h1>
-              <p class="text-amber-200">Welcome, {{ lawyerStore.lawyerProfile.name }}</p>
+              <p class="text-amber-200">Welcome, Attorney {{ authStore.user?.name || lawyerStore.lawyerProfile.name }}</p>
             </div>
           </div>
           
           <div class="flex items-center gap-4">
             <div class="text-right hidden md:block">
               <p class="text-xs text-amber-200">Bar License</p>
-              <p class="text-sm font-medium">{{ lawyerStore.lawyerProfile.barNumber }}</p>
+              <p class="text-sm font-medium">{{ lawyerStore.lawyerProfile.barNumber || 'N/A' }}</p>
             </div>
             <button 
               @click="handleLogout"
@@ -50,7 +50,7 @@
         <!-- Pending -->
         <div class="bg-white rounded-xl shadow-md border border-amber-200 p-6 hover:shadow-lg transition-shadow">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-amber-700 font-medium">Pending</h3>
+            <h3 class="text-amber-700 font-medium">pending</h3>
             <div class="bg-amber-100 p-3 rounded-lg">
               <font-awesome-icon icon="clock" class="text-amber-600 text-xl" />
             </div>
@@ -183,7 +183,7 @@
                 <td class="py-4 px-4">
                   <div class="flex gap-2">
                     <button 
-                      v-if="appointment.status === 'Pending'"
+                      v-if="appointment.status === 'pending'"
                       @click="handleAcceptAppointment(appointment.id)"
                       class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
                       title="Accept Appointment"
@@ -192,7 +192,7 @@
                       <span>Accept</span>
                     </button>
                     <button 
-                      v-if="appointment.status === 'Pending'"
+                      v-if="appointment.status === 'pending'"
                       @click="handleRejectAppointment(appointment.id)"
                       class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
                       title="Reject Appointment"
@@ -247,12 +247,15 @@ const lawyerStore = useLawyerStore()
 const authStore = useAuthStore()
 
 onMounted(() => {
-  // Load appointments
+  // Use logged-in lawyer as base profile
+  if (authStore.user?.role === 'lawyer') {
+    lawyerStore.lawyerProfile.name  = authStore.user.name
+    lawyerStore.lawyerProfile.email = authStore.user.email
+  }
+
   lawyerStore.fetchAppointments()
-  // Load lawyer profile from storage
   lawyerStore.loadProfileFromStorage()
 })
-
 const formatDate = (dateString) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', { 

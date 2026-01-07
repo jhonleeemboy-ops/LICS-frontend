@@ -33,6 +33,12 @@ const routes = [
   name: 'AdminDashboard',
   component: () => import('@/views/AdminDashboard.vue'),
   meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+  path: '/admin/users',
+  name: 'AdminUsers',
+  component: () => import('@/components/admin/UserManagement.vue'),
+  meta: { requiresAuth: true, role: 'admin' }
   }
 ]
 

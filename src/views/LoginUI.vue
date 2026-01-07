@@ -110,82 +110,35 @@
           </p>
         </div>
 
-        <!-- Demo Accounts Section -->
+        <!-- Admin Demo Account Only -->
         <div class="mt-6 pt-6 border-t border-amber-200">
           <p class="text-sm font-medium text-amber-800 mb-3 flex items-center gap-2">
             <font-awesome-icon icon="circle-info" class="text-amber-600" />
-            Demo Accounts:
+            Admin Demo Account:
           </p>
-          <div class="space-y-3">
-            <!-- Client Demo -->
-            <div 
-              @click="fillDemoAccount(demoAccounts[0])"
-              class="flex items-center justify-between p-3 bg-amber-50/80 rounded-lg hover:bg-amber-100/90 cursor-pointer transition-colors border border-amber-200 hover:border-amber-300"
-            >
-              <div class="flex items-center gap-2">
-                <font-awesome-icon icon="user-tie" class="text-amber-600" />
-                <span class="font-medium text-amber-800">Client:</span>
-              </div>
-              <div class="text-right">
-                <span class="text-amber-700 font-medium">client@demo.com</span>
-                <span class="text-amber-500 mx-1">/</span>
-                <span class="font-semibold text-amber-900">demo123</span>
-              </div>
+          
+          <!-- Admin Demo -->
+          <div 
+            @click="fillAdminAccount()"
+            class="flex items-center justify-between p-3 bg-amber-50/80 rounded-lg hover:bg-amber-100/90 cursor-pointer transition-colors border border-amber-200 hover:border-amber-300"
+          >
+            <div class="flex items-center gap-2">
+              <font-awesome-icon icon="user-shield" class="text-amber-600" />
+              <span class="font-medium text-amber-800">Admin:</span>
             </div>
-
-            <!-- Lawyer Demo -->
-            <div 
-              @click="fillDemoAccount(demoAccounts[1])"
-              class="flex items-center justify-between p-3 bg-amber-50/80 rounded-lg hover:bg-amber-100/90 cursor-pointer transition-colors border border-amber-200 hover:border-amber-300"
-            >
-              <div class="flex items-center gap-2">
-                <font-awesome-icon icon="scale-balanced" class="text-amber-600" />
-                <span class="font-medium text-amber-800">Lawyer:</span>
-              </div>
-              <div class="text-right">
-                <span class="text-amber-700 font-medium">lawyer@demo.com</span>
-                <span class="text-amber-500 mx-1">/</span>
-                <span class="font-semibold text-amber-900">demo123</span>
-              </div>
-            </div>
-
-            <!-- Admin Demo -->
-            <div 
-              @click="fillDemoAccount(demoAccounts[2])"
-              class="flex items-center justify-between p-3 bg-amber-50/80 rounded-lg hover:bg-amber-100/90 cursor-pointer transition-colors border border-amber-200 hover:border-amber-300"
-            >
-              <div class="flex items-center gap-2">
-                <font-awesome-icon icon="user-shield" class="text-amber-600" />
-                <span class="font-medium text-amber-800">Admin:</span>
-              </div>
-              <div class="text-right">
-                <span class="text-amber-700 font-medium">admin@demo.com</span>
-                <span class="text-amber-500 mx-1">/</span>
-                <span class="font-semibold text-amber-900">demo123</span>
-              </div>
+            <div class="text-right">
+              <span class="text-amber-700 font-medium">admin@demo.com</span>
+              <span class="text-amber-500 mx-1">/</span>
+              <span class="font-semibold text-amber-900">demo123</span>
             </div>
           </div>
-        </div>
 
-        <!-- Quick Fill Demo Buttons -->
-        <div class="mt-4 grid grid-cols-3 gap-2">
+          <!-- Quick Fill Button -->
           <button
-            @click="fillDemoAccount(demoAccounts[0])"
-            class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 py-2 rounded-lg transition-colors border border-amber-300 font-medium"
+            @click="fillAdminAccount()"
+            class="w-full mt-3 text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 py-2 rounded-lg transition-colors border border-amber-300 font-medium"
           >
-            Fill Client
-          </button>
-          <button
-            @click="fillDemoAccount(demoAccounts[1])"
-            class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 py-2 rounded-lg transition-colors border border-amber-300 font-medium"
-          >
-            Fill Lawyer
-          </button>
-          <button
-            @click="fillDemoAccount(demoAccounts[2])"
-            class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 py-2 rounded-lg transition-colors border border-amber-300 font-medium"
-          >
-            Fill Admin
+            Fill Admin Account
           </button>
         </div>
       </div>
@@ -200,10 +153,11 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
-import butuanBg from '@/assets/butuan.jpg' // Import the background image
+import { api } from '@/services/api'
+import butuanBg from '@/assets/butuan.jpg'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -215,33 +169,15 @@ const loading = ref(false)
 const error = ref('')
 const rememberMe = ref(false)
 
-const demoAccounts = reactive([
-  {
-    role: 'Client',
-    email: 'client@demo.com',
-    password: 'demo123',
-    icon: 'user-tie',
-    color: 'amber'
-  },
-  {
-    role: 'Lawyer',
-    email: 'lawyer@demo.com',
-    password: 'demo123',
-    icon: 'scale-balanced',
-    color: 'amber'
-  },
-  {
-    role: 'Admin',
-    email: 'admin@demo.com',
-    password: 'demo123',
-    icon: 'user-shield',
-    color: 'amber'
-  }
-])
+// Quick-fill admin credentials (real admin user in DB)
+const adminAccount = {
+  email: 'admin@butuan.gov',      // <-- your real admin email
+  password: 'yourAdminPassword',  // <-- your real admin password
+}
 
-const fillDemoAccount = (account) => {
-  email.value = account.email
-  password.value = account.password
+const fillAdminAccount = () => {
+  email.value = adminAccount.email
+  password.value = adminAccount.password
   error.value = ''
 }
 
@@ -250,68 +186,69 @@ const handleLogin = async () => {
     loading.value = true
     error.value = ''
 
-    // Check if credentials match any demo account
-    const matchedAccount = demoAccounts.find(
-      acc => acc.email === email.value && acc.password === password.value
-    )
+    // Real API login for all users (admin / client / lawyer)
+    const response = await api.post('/login', {
+      email: email.value,
+      password: password.value,
+    })
 
-    if (matchedAccount) {
-      // Simulate login based on role
-      authStore.user = {
-        id: matchedAccount.role === 'Client' ? 1 : matchedAccount.role === 'Lawyer' ? 2 : 3,
-        name: matchedAccount.role === 'Client' ? 'John Doe' : 
-              matchedAccount.role === 'Lawyer' ? 'Attorney Jane Smith' : 'Administrator',
-        email: email.value,
-        role: matchedAccount.role.toLowerCase()
-      }
-      authStore.isAuthenticated = true
-      
-      // Store in localStorage if remember me is checked
-      if (rememberMe.value) {
-        localStorage.setItem('user', JSON.stringify(authStore.user))
-        localStorage.setItem('isAuthenticated', 'true')
-      }
-      
-      // Redirect based on role
-      switch(matchedAccount.role.toLowerCase()) {
-        case 'client':
-          router.push('/client/dashboard')
-          break
-        case 'lawyer':
-          router.push('/lawyer/dashboard')
-          break
-        case 'admin':
-          router.push('/admin/dashboard')
-          break
-        default:
-          router.push('/')
-      }
+    const user = response.user
+    const token = response.token
+
+    // Map lawyer license to barNumber for frontend
+    if (user.role === 'lawyer' && user.lawyer_profile) {
+      user.barNumber = user.lawyer_profile.license_no
+    }
+
+    // Block pending lawyers on frontend too (backend already returns 403)
+    if (user.role === 'lawyer' && user.status !== 'approved') {
+      error.value = 'Your lawyer account is pending admin approval. Please wait for activation.'
       return
     }
 
-    // If no match found
-    error.value = 'Invalid credentials. Please use one of the demo accounts.'
+    if (!token) {
+      error.value = 'Login failed: no token returned.'
+      return
+    }
 
+    // Save auth state
+    authStore.token = token
+    authStore.user = user
+    authStore.isAuthenticated = true
+    localStorage.setItem('auth_token', token)
+    localStorage.setItem('user', JSON.stringify(user))
+
+    if (rememberMe.value) {
+      localStorage.setItem('isAuthenticated', 'true')
+    } else {
+      localStorage.removeItem('isAuthenticated')
+    }
+
+    // Redirect based on role
+    switch (user.role.toLowerCase()) {
+      case 'client':
+        router.push('/client/dashboard')
+        break
+      case 'lawyer':
+        router.push('/lawyer/dashboard')
+        break
+      case 'admin':
+        router.push('/admin/dashboard')
+        break
+      default:
+        router.push('/')
+    }
   } catch (err) {
     console.error('Login failed:', err)
-    error.value = 'Login failed. Please try again.'
+    error.value =
+      err.status === 401
+        ? 'Invalid credentials. Please check your email and password.'
+        : err.status === 403
+        ? 'Your account is pending admin approval. Please wait for activation.'
+        : err.message || 'Login failed. Please try again.'
   } finally {
     loading.value = false
   }
 }
-
-// Initialize from localStorage if remember me was checked
-const initializeFromStorage = () => {
-  const savedUser = localStorage.getItem('user')
-  const savedAuth = localStorage.getItem('isAuthenticated')
-  
-  if (savedUser && savedAuth === 'true') {
-    authStore.user = JSON.parse(savedUser)
-    authStore.isAuthenticated = true
-    email.value = authStore.user.email
-    rememberMe.value = true
-  }
-}
-
-initializeFromStorage()
 </script>
+

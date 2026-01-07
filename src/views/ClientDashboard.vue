@@ -100,7 +100,7 @@
           class="flex-1 py-3 font-medium flex items-center justify-center gap-2 transition-colors"
           @click="activeTab = 'ordinance'"
         >
-          <font-awesome-icon icon="book-law" />
+          <font-awesome-icon icon="book" />
           <span>Ordinance</span>
         </button>
       </div>
@@ -423,7 +423,7 @@
             >
               <div class="flex items-start justify-between mb-3">
                 <div class="bg-amber-100 p-3 rounded-lg group-hover:bg-amber-200 transition-colors">
-                  <font-awesome-icon icon="book-law" class="text-amber-600 text-xl" />
+                  <font-awesome-icon icon="book" class="text-amber-600 text-xl" />
                 </div>
                 <span class="text-xs text-gray-500">{{ ordinance.views }} views</span>
               </div>
@@ -449,10 +449,64 @@
           </div>
         </div>
       </div>
-
     </main>
 
-    <!-- ... existing help button and mobile actions ... -->
+    <!-- Mobile Actions Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+      <div class="flex justify-around">
+        <button 
+          @click="activeTab = 'chat'"
+          :class="activeTab === 'chat' ? 'text-amber-700' : 'text-gray-500'"
+          class="flex flex-col items-center gap-1"
+        >
+          <font-awesome-icon icon="comment-dots" class="text-xl" />
+          <span class="text-xs">Chat</span>
+        </button>
+        <button 
+          @click="activeTab = 'history'"
+          :class="activeTab === 'history' ? 'text-amber-700' : 'text-gray-500'"
+          class="flex flex-col items-center gap-1"
+        >
+          <font-awesome-icon icon="clock-rotate-left" class="text-xl" />
+          <span class="text-xs">History</span>
+        </button>
+        <button 
+          @click="showBookingModal = true"
+          class="flex flex-col items-center gap-1 text-amber-700"
+        >
+          <div class="bg-amber-700 text-white w-14 h-14 rounded-full flex items-center justify-center -mt-6 shadow-lg">
+            <font-awesome-icon icon="calendar-plus" class="text-xl" />
+          </div>
+          <span class="text-xs mt-1">Book</span>
+        </button>
+        <button 
+          @click="activeTab = 'appointments'"
+          :class="activeTab === 'appointments' ? 'text-amber-700' : 'text-gray-500'"
+          class="flex flex-col items-center gap-1"
+        >
+          <font-awesome-icon icon="calendar-days" class="text-xl" />
+          <span class="text-xs">Appts</span>
+        </button>
+        <button 
+          @click="activeTab = 'ordinance'"
+          :class="activeTab === 'ordinance' ? 'text-amber-700' : 'text-gray-500'"
+          class="flex flex-col items-center gap-1"
+        >
+          <font-awesome-icon icon="book" class="text-xl" />
+          <span class="text-xs">Laws</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Help Button -->
+    <div class="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-40">
+      <button 
+        class="bg-amber-600 text-white p-3 rounded-full shadow-lg hover:bg-amber-700 transition-colors"
+        title="Need Help?"
+      >
+        <font-awesome-icon icon="circle-question" class="text-xl" />
+      </button>
+    </div>
 
     <!-- Ordinance Detail Modal -->
     <div v-if="showOrdinanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto" @click.self="showOrdinanceModal = false">
@@ -531,6 +585,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Booking Modal -->
+    <BookingModal 
+      :show="showBookingModal" 
+      @close="showBookingModal = false"
+      @book="handleBookAppointment"
+    />
   </div>
 </template>
 
@@ -541,6 +602,7 @@ import { useChatStore } from '@/stores/chat'
 import { useAppointmentStore } from '@/stores/appointment'
 import { useOrdinanceStore } from '@/stores/ordinance'
 import { useRouter } from 'vue-router'
+import { api } from '@/services/api' // Assuming an API service is set up
 import ChatInterface from '@/components/clients/ChatInterface.vue'
 import BookingModal from '@/components/clients/BookingModal.vue'
 
@@ -610,6 +672,7 @@ const getOrdinanceCountByCategory = (category) => {
 onMounted(async () => {
   user.value = authStore.user
   await chatStore.loadChatsFromStorage()
+  await appointmentStore.fetchLawyers() // Load lawyers from API
 })
 
 // Ordinance-related methods
@@ -630,7 +693,7 @@ const askAboutOrdinance = () => {
   question.value = ''
 }
 
-// ... existing chat methods ...
+// Chat methods
 const selectTopic = (topic) => {
   selectedTopic.value = topic
   const newChat = chatStore.startNewChat(topic)
@@ -697,13 +760,60 @@ const clearAllChats = async () => {
 }
 
 // Appointment methods
-const handleBookAppointment = (appointmentData) => {
-  const newAppointment = appointmentStore.bookAppointment(appointmentData)
-  showBookingModal.value = false
-  activeTab.value = 'appointments'
-  
-  alert(`Appointment booked successfully!\n\nDetails:\nDate: ${newAppointment.date}\nTime: ${newAppointment.time}\nLawyer: ${newAppointment.lawyer}\nStatus: ${newAppointment.status}\n\nYou will receive a confirmation once the lawyer accepts your request.`)
+// Appointment methods
+const handleBookAppointment = async (appointmentData) => {
+  try {
+    // 1) Find the chosen lawyer object from your store based on name + category
+    let lawyerId = null
+
+    if (appointmentData.lawyer) {
+      // assumes your appointmentStore has getLawyersByCategory()
+      const lawyersInCategory =
+        appointmentStore.getLawyersByCategory(appointmentData.category) || []
+
+      const chosenLawyer = lawyersInCategory.find(
+        (l) => l.name === appointmentData.lawyer
+      )
+
+      if (chosenLawyer) {
+        lawyerId = chosenLawyer.id
+      }
+    }
+
+    // 2) Send appointment to backend so lawyer dashboard can see it
+    await api.post('/appointments', {
+      lawyer_id: lawyerId,
+      category: appointmentData.category,
+      date: appointmentData.date,
+      time: appointmentData.time,
+      client_name: appointmentData.clientName,
+      client_phone: appointmentData.clientPhone,
+      client_email: appointmentData.clientEmail,
+      consultation_type: appointmentData.consultationType,
+      notes: appointmentData.notes,
+    })
+
+    // 3) Optionally also keep local store history (if you still want it)
+    appointmentStore.bookAppointment({
+      ...appointmentData,
+      lawyerId,
+      status: 'Pending',
+    })
+
+    showBookingModal.value = false
+    activeTab.value = 'appointments'
+
+    setTimeout(() => {
+      alert(
+        `Appointment booked successfully!\n\nDetails:\nName: ${appointmentData.clientName}\nDate: ${appointmentData.date}\nTime: ${appointmentData.time}\nCategory: ${appointmentData.category}\nType: ${appointmentData.consultationType}\n\nStatus: Pending\n\nYou will receive a confirmation once the lawyer accepts your request.`
+      )
+    }, 100)
+  } catch (e) {
+    console.error('Failed to create appointment', e)
+    alert('Failed to create appointment. Please try again.')
+  }
 }
+
 
 const cancelAppointment = (appointmentId) => {
   if (confirm('Are you sure you want to cancel this appointment?')) {

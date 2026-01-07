@@ -3,6 +3,16 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useChatStore = defineStore('chat', () => {
+  // In-memory storage fallback
+  const inMemoryChats = ref(new Map())
+  
+  // Helper to check if storage API is available
+  const isStorageAvailable = () => {
+    return typeof window !== 'undefined' && 
+           window.storage && 
+           typeof window.storage.set === 'function'
+  }
+
   // State
   const chats = ref([])
   const currentChat = ref(null)
@@ -55,24 +65,33 @@ export const useChatStore = defineStore('chat', () => {
   // Load chats from storage on initialization
   const loadChatsFromStorage = async () => {
     try {
-      const keys = await window.storage.list('chat:', false)
-      if (keys && keys.keys) {
-        const loadedChats = []
-        for (const key of keys.keys) {
-          try {
-            const result = await window.storage.get(key, false)
-            if (result) {
-              const chatData = JSON.parse(result.value)
-              loadedChats.push(chatData)
+      if (isStorageAvailable()) {
+        const keys = await window.storage.list('chat:', false)
+        if (keys && keys.keys) {
+          const loadedChats = []
+          for (const key of keys.keys) {
+            try {
+              const result = await window.storage.get(key, false)
+              if (result) {
+                const chatData = JSON.parse(result.value)
+                loadedChats.push(chatData)
+              }
+            } catch (err) {
+              console.error('Error loading chat:', key, err)
             }
-          } catch (err) {
-            console.error('Error loading chat:', key, err)
           }
+          chats.value = loadedChats.sort((a, b) => 
+            new Date(b.lastUpdated || b.date) - new Date(a.lastUpdated || a.date)
+          )
+          console.log('Loaded chats from storage:', chats.value.length)
         }
+      } else {
+        // Load from in-memory storage
+        const loadedChats = Array.from(inMemoryChats.value.values())
         chats.value = loadedChats.sort((a, b) => 
           new Date(b.lastUpdated || b.date) - new Date(a.lastUpdated || a.date)
         )
-        console.log('Loaded chats from storage:', chats.value.length)
+        console.log('Loaded chats from memory:', chats.value.length)
       }
     } catch (error) {
       console.log('No chat history found or error loading:', error)
@@ -98,13 +117,35 @@ export const useChatStore = defineStore('chat', () => {
         lastUpdated: new Date().toISOString()
       }
       
-      await window.storage.set(`chat:${chat.id}`, JSON.stringify(chatData), false)
-      console.log('Chat saved successfully:', chat.id)
+      if (isStorageAvailable()) {
+        await window.storage.set(`chat:${chat.id}`, JSON.stringify(chatData), false)
+        console.log('Chat saved to persistent storage:', chat.id)
+      } else {
+        // Fallback to in-memory storage
+        inMemoryChats.value.set(`chat:${chat.id}`, chatData)
+        console.log('Chat saved to memory:', chat.id)
+      }
       
       // Reload chat history to keep it in sync
       await loadChatsFromStorage()
     } catch (error) {
       console.error('Error saving chat:', error)
+      // Fallback to in-memory storage on error
+      try {
+        const chatData = {
+          id: chat.id,
+          topic: chat.topic,
+          question: chat.question,
+          date: chat.date,
+          messages: chat.messages,
+          unreadCount: chat.unreadCount || 0,
+          lastUpdated: new Date().toISOString()
+        }
+        inMemoryChats.value.set(`chat:${chat.id}`, chatData)
+        console.log('Chat saved to memory (fallback):', chat.id)
+      } catch (memError) {
+        console.error('Failed to save to memory:', memError)
+      }
     }
   }
 
@@ -223,10 +264,17 @@ export const useChatStore = defineStore('chat', () => {
     if (index !== -1) {
       // Delete from storage
       try {
-        await window.storage.delete(`chat:${chatId}`, false)
-        console.log('Chat deleted from storage:', chatId)
+        if (isStorageAvailable()) {
+          await window.storage.delete(`chat:${chatId}`, false)
+          console.log('Chat deleted from storage:', chatId)
+        } else {
+          inMemoryChats.value.delete(`chat:${chatId}`)
+          console.log('Chat deleted from memory:', chatId)
+        }
       } catch (error) {
         console.error('Error deleting chat from storage:', error)
+        // Try memory fallback
+        inMemoryChats.value.delete(`chat:${chatId}`)
       }
       
       // Remove from array
@@ -243,15 +291,22 @@ export const useChatStore = defineStore('chat', () => {
   const clearAllChats = async () => {
     // Delete all chats from storage
     try {
-      const keys = await window.storage.list('chat:', false)
-      if (keys && keys.keys) {
-        for (const key of keys.keys) {
-          await window.storage.delete(key, false)
+      if (isStorageAvailable()) {
+        const keys = await window.storage.list('chat:', false)
+        if (keys && keys.keys) {
+          for (const key of keys.keys) {
+            await window.storage.delete(key, false)
+          }
         }
+        console.log('All chats cleared from storage')
+      } else {
+        inMemoryChats.value.clear()
+        console.log('All chats cleared from memory')
       }
-      console.log('All chats cleared from storage')
     } catch (error) {
       console.error('Error clearing chats from storage:', error)
+      // Fallback to clearing memory
+      inMemoryChats.value.clear()
     }
     
     chats.value = []
@@ -283,6 +338,12 @@ export const useChatStore = defineStore('chat', () => {
   // Generate bot response with AI analysis
   const generateBotResponse = async (userMessage, chatbotComposable) => {
     try {
+      // Check if chatbotComposable has processMessage method
+      if (!chatbotComposable || typeof chatbotComposable.processMessage !== 'function') {
+        console.error('chatbotComposable.processMessage is not a function')
+        throw new Error('Chatbot service not properly initialized')
+      }
+      
       const response = await chatbotComposable.processMessage(userMessage)
       return {
         text: response.text,
@@ -342,6 +403,7 @@ export const useChatStore = defineStore('chat', () => {
     generateBotResponse,
     formatDate,
     loadChatsFromStorage,
-    saveChatToStorage
+    saveChatToStorage,
+    isStorageAvailable
   }
 })

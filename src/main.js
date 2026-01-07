@@ -4,15 +4,18 @@ import { createPinia } from 'pinia'
 import router from './router'
 import './assets/main.css'
 
-// Import FontAwesome
+// ✅ ADD THIS LINE
+import { initCsrf } from '@/services/api'
+
+// FontAwesome
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { 
-  faUser, 
-  faEnvelope, 
-  faPhone, 
-  faLock, 
-  faEye, 
+import {
+  faUser,
+  faEnvelope,
+  faPhone,
+  faLock,
+  faEye,
   faEyeSlash,
   faUserTie,
   faScaleBalanced,
@@ -20,7 +23,6 @@ import {
   faArrowRight,
   faCircleQuestion,
   faCircleNotch,
-  // New icons for client dashboard
   faRightFromBracket,
   faCommentDots,
   faClockRotateLeft,
@@ -37,19 +39,71 @@ import {
   faPaperPlane,
   faCalendarCheck,
   faQuestion,
-  // Additional icons you might need
   faCircleExclamation,
   faUserShield,
-  faCircleInfo
+  faCircleInfo,
+
+  // ADMIN
+  faGaugeHigh,
+  faFileLines,
+  faClock,
+  faTags,
+  faMagnifyingGlass,
+  faCheck,
+  faTimes,
+  faBan,
+  faTrash,
+  faPenToSquare,
+  faChartLine,
+  faChartSimple,
+  faFileCirclePlus,
+  faFolderPlus,
+  faFileCircleQuestion,
+  faInbox,
+  faPlus,
+  faCheckCircle,
+  faFileContract,
+
+  // CLIENT
+  faBook,
+  faSearch,
+  faXmark,
+  faBookOpen,
+  faRobot,
+  faArrowLeft,
+  faHouse,
+  faBuilding,
+  faVideo,
+  faCalendar,      // ✅ For calendar icon
+  faHourglassHalf, // ✅ For pending/waiting icon
+  faCheckDouble,   // ✅ For accepted/confirmed
+  faTimesCircle,   // ✅ For rejected
+  faSpinner,       // ✅ For loading states
+  faSync,  
+  faListCheck,
+  faChartBar,
+  faArrowRotateRight,
+  faCalendarXmark        // ✅ For refresh button
 } from '@fortawesome/free-solid-svg-icons'
 
-// Add icons to library
 library.add(
-  faUser, 
-  faEnvelope, 
-  faPhone, 
-  faLock, 
-  faEye, 
+  faChartBar,
+  faListCheck,
+  faArrowRotateRight,
+  faCalendarXmark,
+  faCheckDouble,   // ✅ For accepted/confirmed
+  faTimesCircle,   // ✅ For rejected
+  faSpinner,       // ✅ For loading states
+  faSync,    
+  faHourglassHalf,
+  faCalendar,
+  faBuilding,
+  faVideo,
+  faUser,
+  faEnvelope,
+  faPhone,
+  faLock,
+  faEye,
   faEyeSlash,
   faUserTie,
   faScaleBalanced,
@@ -57,7 +111,6 @@ library.add(
   faArrowRight,
   faCircleQuestion,
   faCircleNotch,
-  // New icons
   faRightFromBracket,
   faCommentDots,
   faClockRotateLeft,
@@ -74,20 +127,46 @@ library.add(
   faPaperPlane,
   faCalendarCheck,
   faQuestion,
-  // Additional icons
   faCircleExclamation,
   faUserShield,
-  faCircleInfo
+  faCircleInfo,
+  faGaugeHigh,
+  faFileLines,
+  faClock,
+  faTags,
+  faMagnifyingGlass,
+  faCheck,
+  faTimes,
+  faBan,
+  faTrash,
+  faPenToSquare,
+  faChartLine,
+  faChartSimple,
+  faFileCirclePlus,
+  faFolderPlus,
+  faFileCircleQuestion,
+  faInbox,
+  faPlus,
+  faCheckCircle,
+  faFileContract,
+  faBook,
+  faSearch,
+  faXmark,
+  faBookOpen,
+  faRobot,
+  faArrowLeft,
+  faHouse
 )
 
 const app = createApp(App)
 const pinia = createPinia()
 
-// Register FontAwesome component globally
 app.component('font-awesome-icon', FontAwesomeIcon)
 
-// IMPORTANT: Install Pinia BEFORE Router
-app.use(pinia)  // ← Pinia first!
-app.use(router) // ← Router second!
+app.use(pinia)
+app.use(router)
+
+// ✅ INITIALIZE CSRF ON APP START
+initCsrf()
 
 app.mount('#app')

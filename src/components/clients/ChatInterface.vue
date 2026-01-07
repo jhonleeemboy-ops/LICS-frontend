@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <button @click="handleBack" class="p-2 hover:bg-amber-700 rounded-lg transition-colors">
-            <font-awesome-icon icon="arrow-left" />
+            <span class="text-lg">←</span>
           </button>
           <div>
             <h3 class="font-bold">Legal Chat Assistant</h3>
@@ -13,7 +13,7 @@
           </div>
         </div>
         <button @click="toggleInfo" class="p-2 hover:bg-amber-700 rounded-lg transition-colors">
-          <font-awesome-icon icon="circle-info" />
+          <span class="text-lg">ℹ️</span>
         </button>
       </div>
     </div>
@@ -35,7 +35,7 @@
           <div class="max-w-[80%] bg-white rounded-2xl rounded-tl-none p-4 shadow-sm">
             <div class="flex items-center gap-2 mb-2">
               <div class="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
-                <font-awesome-icon icon="scale-balanced" class="text-white text-sm" />
+                <span class="text-white text-sm">⚖️</span>
               </div>
               <span class="font-bold text-amber-900">Legal Assistant</span>
               <span class="text-xs text-amber-500">• {{ formatTime(message.timestamp) }}</span>
@@ -50,7 +50,7 @@
             <div v-if="message.ordinances && message.ordinances.length > 0" 
                  class="mt-3 pt-3 border-t border-amber-200">
               <p class="text-xs font-semibold text-amber-800 mb-2">
-                <font-awesome-icon icon="book-open" class="mr-1" />
+                <span class="mr-1">📖</span>
                 Referenced Ordinances:
               </p>
               <div v-for="(ordinance, oIndex) in message.ordinances" 
@@ -82,7 +82,7 @@
         <div class="max-w-[80%] bg-white rounded-2xl rounded-tl-none p-4 shadow-sm">
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 bg-amber-600 rounded-full flex items-center justify-center">
-              <font-awesome-icon icon="scale-balanced" class="text-white text-sm" />
+              <span class="text-white text-sm">⚖️</span>
             </div>
             <div class="flex space-x-1">
               <div class="w-2 h-2 bg-amber-400 rounded-full animate-bounce"></div>
@@ -114,7 +114,7 @@
           :disabled="!newMessage.trim() || isTyping"
           class="px-5 py-3 bg-amber-700 hover:bg-amber-600 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          <font-awesome-icon icon="paper-plane" />
+          <span>📤</span>
         </button>
       </div>
       
@@ -127,7 +127,7 @@
           :disabled="isTyping"
           class="text-xs px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <font-awesome-icon :icon="action.icon" class="text-xs" />
+          <span class="text-xs">{{ action.icon }}</span>
           {{ action.text }}
         </button>
       </div>
@@ -139,13 +139,13 @@
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-bold text-amber-900">About Legal Assistant</h3>
           <button @click="toggleInfo" class="p-2 hover:bg-amber-100 rounded-lg transition-colors">
-            <font-awesome-icon icon="xmark" />
+            <span class="text-xl">✕</span>
           </button>
         </div>
         <div class="space-y-3 text-sm text-gray-600">
           <div class="bg-amber-50 p-3 rounded-lg">
             <p class="font-semibold text-amber-900 mb-1">
-              <font-awesome-icon icon="robot" class="mr-2" />
+              <span class="mr-2">🤖</span>
               AI-Powered Assistant
             </p>
             <p>This chatbot uses advanced AI to analyze your questions and provide accurate information about Butuan City ordinances.</p>
@@ -153,7 +153,7 @@
           
           <div class="bg-blue-50 p-3 rounded-lg">
             <p class="font-semibold text-blue-900 mb-1">
-              <font-awesome-icon icon="book-open" class="mr-2" />
+              <span class="mr-2">📖</span>
               Legal Information
             </p>
             <p>Get instant answers about business permits, property regulations, traffic rules, environmental laws, and more.</p>
@@ -161,14 +161,14 @@
 
           <div class="bg-red-50 p-3 rounded-lg">
             <p class="font-semibold text-red-900 mb-1">
-              <font-awesome-icon icon="exclamation-triangle" class="mr-2" />
+              <span class="mr-2">⚠️</span>
               Important Notice
             </p>
             <p>This chatbot provides general legal information only. For specific legal advice, please consult with a qualified attorney or visit the City Legal Office.</p>
           </div>
 
           <p class="text-center text-xs text-gray-500 mt-4">
-            <font-awesome-icon icon="clock" class="mr-1" />
+            <span class="mr-1">🕐</span>
             Available 24/7 for your convenience
           </p>
         </div>
@@ -199,10 +199,10 @@ const messages = computed(() => currentChat.value?.messages || [])
 const isTyping = computed(() => chatStore.isTyping)
 
 const quickActions = [
-  { icon: 'briefcase', text: 'Business Permit' },
-  { icon: 'home', text: 'Property Tax' },
-  { icon: 'car', text: 'Traffic Rules' },
-  { icon: 'leaf', text: 'Waste Management' }
+  { icon: '💼', text: 'Business Permit' },
+  { icon: '🏠', text: 'Property Tax' },
+  { icon: '🚗', text: 'Traffic Rules' },
+  { icon: '🌿', text: 'Waste Management' }
 ]
 
 // Auto-scroll to bottom when new messages arrive
@@ -251,6 +251,12 @@ const sendMessage = async () => {
   const messageText = newMessage.value.trim()
   newMessage.value = ''
 
+  // Validate current chat exists
+  if (!currentChat.value || !currentChat.value.id) {
+    console.error('No active chat found')
+    return
+  }
+
   // Add user message
   chatStore.addMessage(currentChat.value.id, {
     sender: 'user',
@@ -262,15 +268,25 @@ const sendMessage = async () => {
 
   // Get bot response
   try {
+    // Check if chatbot and processMessage exist
+    if (!chatbot || typeof chatbot.processMessage !== 'function') {
+      throw new Error('Chatbot service not available')
+    }
+
     const response = await chatbot.processMessage(messageText)
     
-    // Add bot message
+    // Validate response
+    if (!response || typeof response !== 'object') {
+      throw new Error('Invalid response from chatbot')
+    }
+    
+    // Add bot message with safe defaults
     chatStore.addMessage(currentChat.value.id, {
       sender: 'bot',
-      text: response.text,
-      category: response.category,
-      ordinances: response.ordinances,
-      suggestions: response.suggestions
+      text: response.text || 'I apologize, but I could not generate a response.',
+      category: response.category || 'General',
+      ordinances: Array.isArray(response.ordinances) ? response.ordinances : [],
+      suggestions: Array.isArray(response.suggestions) ? response.suggestions : []
     })
   } catch (error) {
     console.error('Error processing message:', error)
@@ -279,7 +295,7 @@ const sendMessage = async () => {
       text: 'I apologize, but I encountered an error. Please try again or contact the City Legal Office for assistance.\n\n📞 Contact: (085) 225-XXXX\n📍 Location: Butuan City Hall',
       category: 'Error',
       ordinances: [],
-      suggestions: ['Try asking another question']
+      suggestions: ['Try asking another question', 'Start a new conversation']
     })
   } finally {
     chatStore.markAsTyping(false)
@@ -287,6 +303,7 @@ const sendMessage = async () => {
 }
 
 const sendQuickReply = (text) => {
+  if (isTyping.value) return
   newMessage.value = text
   sendMessage()
 }
